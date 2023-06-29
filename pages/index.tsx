@@ -1,9 +1,43 @@
 import Head from 'next/head';
-import Image from 'next/image';
-
 import styles from '@/pages/index.module.css';
+import getUserCoordinates from '../utils/getUserCoordinates';
+import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import type Weather from '../types/weather';
 
-export default function Home() {
+export default function Home({ serverLatitude, serverLongitude, serverWeather, origin }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const [coordinates, setCoordinates] = useState({
+    latitude: serverLatitude,
+    longitude: serverLongitude
+  });
+  const [weather, setWeather] = useState<Weather|object>(serverWeather);
+  useEffect(() => {
+    if ([serverLatitude, serverLongitude].some((coord) => coord === 'null')) {
+      getUserCoordinates()
+        .then((coords) => {
+          if (coords) {
+            setCoordinates({
+              latitude: String(coords.latitude),
+              longitude: String(coords.longitude)
+            });
+          }
+        });
+    }
+  }, [serverLatitude, serverLongitude]);
+
+  useEffect(() => {
+    if ([coordinates.latitude, coordinates.longitude].every((coord) => typeof coord !== 'number')) {
+      fetch(`${origin}/api/weather?query=${coordinates.latitude},${coordinates.longitude}`)
+        .then((response) => response.json())
+        .then((data) => setWeather(data));
+    }
+  }, [coordinates, origin]);
+
+  const loading = !(weather as Weather).location || (weather as Weather).location.name === 'Null' || coordinates.latitude === 'null';
+
+  if (loading) return <h1>Carregando...</h1>;
+
   return (
     <div className={styles.container}>
       <Head>
@@ -12,54 +46,36 @@ export default function Home() {
       </Head>
 
       <main>
+        <Image src={(weather as Weather).current.condition.icon} alt={(weather as Weather).current.condition.text} width={128} height={128} />
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          { (weather as Weather).location.name }
         </h1>
-
-        <p className={styles.description}>
-          Get started by editing <code>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a href="https://vercel.com/new" className={styles.card}>
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
+        <h2>{Math.round((weather as Weather).current.temp_c)}°C</h2>
+        <h3>{ (weather as Weather).current.condition.text }</h3>
       </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
     </div>
   );
+}
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const headers = context.req.headers;
+  const protocol = context.req.headers.host?.includes('localhost') ? 'http://' : 'https://';
+  const url = protocol + context.req.headers.host;
+  let serverWeather = {};
+  
+  if (headers.latitude !== 'null' && headers.longitude !== 'null') {
+    const { latitude, longitude } = headers;
+    const response = await fetch(`${url}/api/weather?query=${latitude},${longitude}`);
+    const data = await response.json();
+    if (!data.error) serverWeather = data;
+  }
+  
+  return {
+    props: {
+      serverLatitude: headers.latitude,
+      serverLongitude: headers.longitude,
+      serverWeather,
+      origin: url,
+    }
+  };
 }
