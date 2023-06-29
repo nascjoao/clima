@@ -1,14 +1,12 @@
-function getCurrentPosition() {
-  let currentPosition: GeolocationPosition | object = {};
-  navigator.geolocation.getCurrentPosition((position: GeolocationPosition) => {
-    currentPosition = position;
+function getCurrentPosition(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
   });
-  return currentPosition;
 }
 
-export default function getUserCoordinates() {
+export default async function getUserCoordinates() {
   try {
-    const { coords: { latitude, longitude } } = getCurrentPosition() as GeolocationPosition;
+    const { coords: { latitude, longitude } } = await getCurrentPosition();
     return {
       latitude,
       longitude
