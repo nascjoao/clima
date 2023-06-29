@@ -3,12 +3,12 @@ import styles from '@/pages/index.module.css';
 import getUserCoordinates from '../utils/getUserCoordinates';
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import type Weather from '../types/weather';
-import { Alert, AlertTitle, Box, Button, Skeleton, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Button } from '@mui/material';
 import SyncIcon from '@mui/icons-material/Sync';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
 import { getCookie } from 'cookies-next';
+import WeatherDisplay from '@/components/WeatherDisplay';
 
 export default function Home({ serverLatitude, serverLongitude, serverWeather, origin, firstAccess, storedWeather }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [coordinates, setCoordinates] = useState({
@@ -32,10 +32,10 @@ export default function Home({ serverLatitude, serverLongitude, serverWeather, o
   }
   useEffect(() => {
     if (storedWeather) {
-      const a = JSON.parse(storedWeather as string) as Weather;
+      const stored = JSON.parse(storedWeather as string) as Weather;
       setCoordinates({
-        latitude: a.location.lat,
-        longitude: a.location.lon,
+        latitude: stored.location.lat,
+        longitude: stored.location.lon,
       });
       return setWeather(JSON.parse(storedWeather as string));
     }
@@ -80,29 +80,7 @@ export default function Home({ serverLatitude, serverLongitude, serverWeather, o
         <title>Weather</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <main>
-        { loading ? (
-          <Skeleton variant="circular" width={128} height={128} />
-        ) : (
-          <Image src={(weather as Weather).current.condition.icon} alt={(weather as Weather).current.condition.text} width={128} height={128} />
-        ) }
-        <Typography variant="h1">
-          { loading ? (
-            <Skeleton width={340} />
-          ) : (weather as Weather).location.name }
-        </Typography>
-        <Typography variant="h2">
-          { loading ? (
-            <Skeleton width={80} />
-          ) : `${Math.round((weather as Weather).current.temp_c)}°C` }
-        </Typography>
-        <Typography variant="h3">
-          { loading ? (
-            <Skeleton width={100} />
-          ) : (weather as Weather).current.condition.text }
-        </Typography>
-      </main>
+      <WeatherDisplay data={weather} loading={loading} />
     </div>
   );
 }
