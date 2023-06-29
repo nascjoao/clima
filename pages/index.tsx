@@ -5,6 +5,7 @@ import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import type Weather from '../types/weather';
+import { Skeleton, Typography } from '@mui/material';
 
 export default function Home({ serverLatitude, serverLongitude, serverWeather, origin }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [coordinates, setCoordinates] = useState({
@@ -36,22 +37,34 @@ export default function Home({ serverLatitude, serverLongitude, serverWeather, o
 
   const loading = !(weather as Weather).location || (weather as Weather).location.name === 'Null' || coordinates.latitude === 'null';
 
-  if (loading) return <h1>Carregando...</h1>;
-
   return (
     <div className={styles.container}>
       <Head>
-        <title>Create Next App</title>
+        <title>Weather</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main>
-        <Image src={(weather as Weather).current.condition.icon} alt={(weather as Weather).current.condition.text} width={128} height={128} />
-        <h1 className={styles.title}>
-          { (weather as Weather).location.name }
-        </h1>
-        <h2>{Math.round((weather as Weather).current.temp_c)}°C</h2>
-        <h3>{ (weather as Weather).current.condition.text }</h3>
+        { loading ? (
+          <Skeleton variant="circular" width={128} height={128} />
+        ) : (
+          <Image src={(weather as Weather).current.condition.icon} alt={(weather as Weather).current.condition.text} width={128} height={128} />
+        ) }
+        <Typography variant="h1">
+          { loading ? (
+            <Skeleton width={340} />
+          ) : (weather as Weather).location.name }
+        </Typography>
+        <Typography variant="h2">
+          { loading ? (
+            <Skeleton width={80} />
+          ) : `${Math.round((weather as Weather).current.temp_c)}°C` }
+        </Typography>
+        <Typography variant="h3">
+          { loading ? (
+            <Skeleton width={100} />
+          ) : (weather as Weather).current.condition.text }
+        </Typography>
       </main>
     </div>
   );
