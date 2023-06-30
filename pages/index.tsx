@@ -49,7 +49,7 @@ export default function Home({ serverLatitude, serverLongitude, serverWeather, o
     }
   }, [coordinates, origin]);
 
-  const needingToUpdateLocation = !coordinates.latitude;
+  const needingToUpdateLocation = !coordinates.latitude && locationAccessGranted;
   const loading = !(weather as Weather).current && !needingToUpdateLocation;
 
   if (!locationAccessGranted || needingToUpdateLocation) return (
