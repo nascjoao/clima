@@ -1,6 +1,6 @@
 import { Paper, IconButton, InputBase, Typography, Container, Autocomplete, Box } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import WeatherDisplay from '@/components/WeatherDisplay';
 import Weather from 'types/weather';
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
@@ -9,16 +9,19 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch, useAppSelector } from 'redux/store';
 import { addRecent } from 'redux/reducers/recentsReducer';
 import RestoreIcon from '@mui/icons-material/Restore';
+import { useRouter } from 'next/router';
+import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
 
-export default function Search() {
+export default function Search({ previousQueried }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [weather, setWeather] = useState<Weather|object>({});
   const [inputValue, setInputValue] = useState('');
   const [notSearched, setNotSearched] = useState(true);
   const [error, setError] = useState('');
+  const { query } = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const recents = useAppSelector((state) => state.recentsReducer.value);
-  function searchWeather(event: FormEvent, otherQuery?: string) {
-    event.preventDefault();   
+  const searchWeather = useCallback(function searchWeather(event: FormEvent|null, otherQuery?: string) {
+    if (event) event.preventDefault();
     fetch(`/api/weather?query=${otherQuery || inputValue}&mode=search`)
       .then((response) => response.json())
       .then((data) => {
@@ -29,7 +32,12 @@ export default function Search() {
         setInputValue('');
         setNotSearched(false);
       });
-  }
+  }, [dispatch, inputValue]);
+  useEffect(() => {
+    if (query.query) {
+      searchWeather(null, query.query as string);
+    }
+  }, [searchWeather, query]);
   const loading = !(weather as Weather).current;
   return (
     <>
@@ -58,7 +66,7 @@ export default function Search() {
                 {...params.InputProps}
                 {...rest}
                 placeholder="Digite o nome de uma cidade"
-                sx={{ width: '100%', marginLeft: '1rem' }}
+                sx={{ width: '100%', marginLeft: '1rem', height: '100%' }}
               />
             );
           }}
@@ -75,7 +83,7 @@ export default function Search() {
           </Typography>
         </Container>
       ) }
-      { (notSearched && !error) && (
+      { (notSearched && !error && !previousQueried) && (
         <Container sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <Typography variant="h1" fontSize="2rem" sx={{ display: 'flex', alignItems: 'center' }}>
             <TravelExploreIcon sx={{ marginRight: '0.5rem', fontSize: '2rem' }} />
@@ -88,4 +96,12 @@ export default function Search() {
       ) }
     </>
   );
+}
+
+export function getServerSideProps({ query }: GetServerSidePropsContext) {
+  return {
+    props: {
+      previousQueried: !!query.query,
+    }
+  };
 }
