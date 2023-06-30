@@ -4,17 +4,20 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import SearchIcon from '@mui/icons-material/Search';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export default function Nav() {
   const { pathname, push } = useRouter();
-  const tabs: string[] = [
+  const tabs: string[] = useMemo(() => [
     '/',
     '/favoritas',
     '/recentes',
     '/buscar',
-  ];
-  const [current, setCurrent] = useState(tabs.indexOf(pathname));
+  ], []);
+  const [current, setCurrent] = useState(tabs.indexOf(pathname.split('?')[0]));
+  useEffect(() => {
+    setCurrent(tabs.indexOf(pathname.split('?')[0]));
+  }, [pathname, tabs]);
   return (
     <BottomNavigation
       showLabels
