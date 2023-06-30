@@ -4,16 +4,20 @@ import { FormEvent, useState } from 'react';
 import WeatherDisplay from '@/components/WeatherDisplay';
 import Weather from 'types/weather';
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
+import FmdBadIcon from '@mui/icons-material/FmdBad';
 
 export default function Search() {
   const [weather, setWeather] = useState<Weather|object>({});
   const [inputValue, setInputValue] = useState('');
   const [notSearched, setNotSearched] = useState(true);
+  const [error, setError] = useState('');
   function searchWeather(event: FormEvent) {
     event.preventDefault();   
     fetch(`/api/weather?query=${inputValue}&mode=search`)
       .then((response) => response.json())
       .then((data) => {
+        if (data.error) return setError(data.error.message);
+        setError('');
         setWeather(data);
         setInputValue('');
         setNotSearched(false);
@@ -33,14 +37,23 @@ export default function Search() {
           <SearchIcon />
         </IconButton>
       </Paper>
-      { notSearched ? (
+      { error && (
+        <Container sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Typography variant="h1" fontSize="2rem" sx={{ display: 'flex', alignItems: 'center' }}>
+            <FmdBadIcon sx={{ marginRight: '0.5rem', fontSize: '2rem' }} />
+            Localização não encontrada
+          </Typography>
+        </Container>
+      ) }
+      { (notSearched && !error) && (
         <Container sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <Typography variant="h1" fontSize="2rem" sx={{ display: 'flex', alignItems: 'center' }}>
             <TravelExploreIcon sx={{ marginRight: '0.5rem', fontSize: '2rem' }} />
             Olá! Para onde você quer ir?
           </Typography>
         </Container>
-      ) : (
+      ) }
+      { (!notSearched && !error) && (
         <WeatherDisplay data={weather} loading={loading} />
       ) }
     </>
