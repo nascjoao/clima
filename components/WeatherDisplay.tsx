@@ -1,10 +1,16 @@
 import { Container, Skeleton, Typography } from '@mui/material';
 import Image from 'next/image';
 import Weather from 'types/weather';
+import Favorite from './Favorite';
 
 export default function WeatherDisplay({ data, loading }: { data: Weather|object, loading: boolean }) {
   return (
     <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+      <Favorite
+        name={(data as Weather).location.name}
+        lat={(data as Weather).location.lat}
+        lon={(data as Weather).location.lon}
+      />
       { loading ? (
         <Skeleton variant="circular" width={128} height={128} />
       ) : (
