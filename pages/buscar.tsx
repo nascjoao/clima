@@ -1,12 +1,14 @@
-import { Paper, IconButton, InputBase } from '@mui/material';
+import { Paper, IconButton, InputBase, Typography, Container } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { FormEvent, useState } from 'react';
 import WeatherDisplay from '@/components/WeatherDisplay';
 import Weather from 'types/weather';
+import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 
 export default function Search() {
   const [weather, setWeather] = useState<Weather|object>({});
   const [inputValue, setInputValue] = useState('');
+  const [notSearched, setNotSearched] = useState(true);
   function searchWeather(event: FormEvent) {
     event.preventDefault();   
     fetch(`/api/weather?query=${inputValue}&mode=search`)
@@ -14,6 +16,7 @@ export default function Search() {
       .then((data) => {
         setWeather(data);
         setInputValue('');
+        setNotSearched(false);
       });
   }
   const loading = !(weather as Weather).current;
@@ -30,7 +33,16 @@ export default function Search() {
           <SearchIcon />
         </IconButton>
       </Paper>
-      <WeatherDisplay data={weather} loading={loading} />
+      { notSearched ? (
+        <Container sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Typography variant="h1" fontSize="2rem" sx={{ display: 'flex', alignItems: 'center' }}>
+            <TravelExploreIcon sx={{ marginRight: '0.5rem', fontSize: '2rem' }} />
+            Olá! Para onde você quer ir?
+          </Typography>
+        </Container>
+      ) : (
+        <WeatherDisplay data={weather} loading={loading} />
+      ) }
     </>
   );
 }
