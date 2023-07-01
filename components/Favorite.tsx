@@ -3,7 +3,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import { Button } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { addFavorite, removeFavorite } from 'redux/reducers/favoritesReducer';
+import { addFavorite, loadFavorites, removeFavorite } from 'redux/reducers/favoritesReducer';
 import { AppDispatch, useAppSelector } from 'redux/store';
 import Weather from 'types/weather';
 import dayjs from 'dayjs';
@@ -12,6 +12,14 @@ export default function Favorite({ weather }: { weather: Weather }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const favorites = useAppSelector((state) => state.favoritesReducer.value);
+  const [hasLoadedStored, setHasLoadedStored] = useState(false);
+  useEffect(() => {
+    const storedFavorites = JSON.parse(localStorage.getItem('favorites') as string) || [];
+    if (storedFavorites.length && !hasLoadedStored) {
+      dispatch(loadFavorites(storedFavorites));
+      setHasLoadedStored(true);
+    }
+  }, [dispatch, hasLoadedStored]);
   useEffect(() => {
     setIsFavorite(favorites.some((favorite) => favorite.weather.location.name === weather.location.name));
   }, [weather, favorites]);

@@ -38,7 +38,7 @@ export default function WeatherDisplay({ data, loading }: { data: Weather|object
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
-      background: `linear-gradient(${findPalette(data as Weather)[0]}, ${findPalette(data as Weather)[1]})`,
+      background: (data as Weather).current && `linear-gradient(${findPalette(data as Weather)[0]}, ${findPalette(data as Weather)[1]})`,
       color: '#fafafa'
     }}>
       { !loading && (
