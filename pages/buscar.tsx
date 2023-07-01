@@ -7,7 +7,7 @@ import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 import FmdBadIcon from '@mui/icons-material/FmdBad';
 import { useDispatch } from 'react-redux';
 import { AppDispatch, useAppSelector } from 'redux/store';
-import { addRecent } from 'redux/reducers/recentsReducer';
+import { addRecent, loadRecents } from 'redux/reducers/recentsReducer';
 import RestoreIcon from '@mui/icons-material/Restore';
 import { useRouter } from 'next/router';
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
@@ -21,6 +21,14 @@ export default function Search({ previousQueried }: InferGetServerSidePropsType<
   const { query } = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const recents = useAppSelector((state) => state.recentsReducer.value);
+  const [hasLoadedStored, setHasLoadedStored] = useState(false);
+  useEffect(() => {
+    const storedRecents = JSON.parse(localStorage.getItem('recents') as string) || [];
+    if (storedRecents.length && !hasLoadedStored) {
+      dispatch(loadRecents(storedRecents));
+      setHasLoadedStored(true);
+    }
+  }, [dispatch, hasLoadedStored]);
   const searchWeather = useCallback(function searchWeather(event: FormEvent|null, otherQuery?: string) {
     if (event) event.preventDefault();
     fetch(`/api/weather?query=${otherQuery || inputValue}&mode=search`)

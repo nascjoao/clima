@@ -4,11 +4,20 @@ import RestoreIcon from '@mui/icons-material/Restore';
 import ClearIcon from '@mui/icons-material/Clear';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
-import { removeRecent } from '../redux/reducers/recentsReducer';
+import { loadRecents, removeRecent } from '../redux/reducers/recentsReducer';
+import { useEffect, useState } from 'react';
 
 export default function Recents() {
   const recents = useAppSelector((state) => state.recentsReducer.value);
   const dispatch = useDispatch<AppDispatch>();
+  const [hasLoadedStored, setHasLoadedStored] = useState(false);
+  useEffect(() => {
+    const storedRecents = JSON.parse(localStorage.getItem('recents') as string) || [];
+    if (storedRecents.length && !hasLoadedStored) {
+      dispatch(loadRecents(storedRecents));
+      setHasLoadedStored(true);
+    }
+  }, [dispatch, hasLoadedStored]);
   function removeItem(event: React.MouseEvent, item: string) {
     event.preventDefault();
     dispatch(removeRecent(item));

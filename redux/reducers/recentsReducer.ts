@@ -15,5 +15,5 @@ export const recentsSlice = createSlice({
   reducers: recentsActions,
 });
 
-export const { addRecent, removeRecent } = recentsSlice.actions;
+export const { addRecent, loadRecents, removeRecent } = recentsSlice.actions;
 export default recentsSlice.reducer;
