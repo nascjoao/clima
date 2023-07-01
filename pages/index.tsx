@@ -75,6 +75,16 @@ export default function Home({ serverLatitude, serverLongitude, serverWeather, o
 
   return (
     <div className={styles.container}>
+      { !needingToUpdateLocation && (
+        <Button
+          onClick={allowAccessLocation}
+          variant="text"
+          startIcon={<SyncIcon />}
+          sx={{ position: 'fixed', top: '2rem', color: '#fafafa', textShadow: '0 0 20px rgba(0,0,0,0.3)' }}
+        >
+          Atualizar minha localização
+        </Button>
+      ) }
       <WeatherDisplay data={weather} loading={loading} />
     </div>
   );
