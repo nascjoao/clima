@@ -25,8 +25,8 @@ export default function Favorite({ weather }: { weather: Weather }) {
       startIcon={ isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon /> }
       onClick={manageFavorite}
       sx={{
-        borderColor: '#ec4899',
-        color: isFavorite ? '#fafafa' : '#ec4899',
+        borderColor: '#fafafa',
+        color: '#fafafa',
         bgcolor: isFavorite ? '#ec4899' : '',
         '&:hover': {
           borderColor: '#ec4899',

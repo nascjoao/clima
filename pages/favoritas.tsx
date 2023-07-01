@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import Image from 'next/image';
 import Weather from 'types/weather';
+import { findPalette } from '@/components/WeatherDisplay';
 
 export default function Favorites() {
   const favorites = useAppSelector((state) => state.favoritesReducer.value);
@@ -45,7 +46,7 @@ export default function Favorites() {
     >
       <ListSubheader component="h1">Favoritas</ListSubheader>
       <ul style={{ padding: '0 2rem' }}>
-        {favorites.map(({ weather }) => (
+        {[...favorites].sort((a, b) => a.weather.location.name.localeCompare(b.weather.location.name)).map(({ weather }) => (
           <Link href={`/buscar?query=${weather.location.name}`} key={weather.location.name}>
             <ListItem
               sx={{ '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' }, borderRadius: '5px' }}
@@ -58,14 +59,14 @@ export default function Favorites() {
               <ListItemIcon>
                 <Image src={weather.current.condition.icon} alt={weather.current.condition.text} width={40} height={40} />
               </ListItemIcon>
-              <Card sx={{ width: '100%' }}>
+              <Card sx={{ width: '100%', background: `linear-gradient(${findPalette(weather)[0]}, ${findPalette(weather)[1]})`, color: '#fafafa' }}>
                 <CardContent>
                   <Stack direction="row" justifyContent="space-between">
-                    <Typography fontSize="2.25rem">
+                    <Typography fontSize="2.25rem" sx={{ textShadow: '0 5px 10px rgba(0,0,0,0.2)' }}>
                       {weather.location.name}
                     </Typography>
                     { hasCheckedForUpdates ? (
-                      <Typography fontSize="2.25rem">
+                      <Typography fontSize="2.25rem" sx={{ textShadow: '0 5px 7px rgba(0,0,0,0.2)' }}>
                         {Math.round(weather.current.temp_c)}°C
                       </Typography>
                     ) : <Skeleton width={80} /> }
