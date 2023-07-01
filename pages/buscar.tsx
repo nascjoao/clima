@@ -17,6 +17,7 @@ export default function Search({ previousQueried }: InferGetServerSidePropsType<
   const [inputValue, setInputValue] = useState('');
   const [notSearched, setNotSearched] = useState(true);
   const [error, setError] = useState('');
+  const [loadedFromQuery, setLoadedFromQuery] = useState(false);
   const { query } = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const recents = useAppSelector((state) => state.recentsReducer.value);
@@ -34,10 +35,11 @@ export default function Search({ previousQueried }: InferGetServerSidePropsType<
       });
   }, [dispatch, inputValue]);
   useEffect(() => {
-    if (query.query) {
+    if (query.query && !loadedFromQuery) {
       searchWeather(null, query.query as string);
+      setLoadedFromQuery(true);
     }
-  }, [searchWeather, query]);
+  }, [searchWeather, query, loadedFromQuery]);
   const loading = !(weather as Weather).current;
   return (
     <>
@@ -65,6 +67,9 @@ export default function Search({ previousQueried }: InferGetServerSidePropsType<
               <InputBase
                 {...params.InputProps}
                 {...rest}
+                onChange={({ target: { value } }) => {
+                  setInputValue(value);
+                }}
                 placeholder="Digite o nome de uma cidade"
                 sx={{ width: '100%', marginLeft: '1rem', height: '100%' }}
               />

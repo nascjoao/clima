@@ -5,16 +5,18 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addFavorite, removeFavorite } from 'redux/reducers/favoritesReducer';
 import { AppDispatch, useAppSelector } from 'redux/store';
+import Weather from 'types/weather';
+import dayjs from 'dayjs';
 
-export default function Favorite({ name, lat, lon }: { name: string, lat: number, lon: number }) {
+export default function Favorite({ weather }: { weather: Weather }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const favorites = useAppSelector((state) => state.favoritesReducer.value);
   useEffect(() => {
-    setIsFavorite(favorites.some((favorite) => favorite.name === name));
-  }, [favorites, name]);
+    setIsFavorite(favorites.some((favorite) => favorite.weather.location.name === weather.location.name));
+  }, [weather, favorites]);
   function manageFavorite() {
-    dispatch(isFavorite ? removeFavorite(name) : addFavorite({ name, lat, lon }));
+    dispatch(isFavorite ? removeFavorite(weather.location.name) : addFavorite({ lastUpdated: dayjs(new Date()).format('YYYY/MM/DD HH:mm'), weather }));
     setIsFavorite(!isFavorite);
   }
   return (

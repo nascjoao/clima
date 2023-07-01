@@ -8,9 +8,7 @@ export default function WeatherDisplay({ data, loading }: { data: Weather|object
     <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
       { !loading && (
         <Favorite
-          name={(data as Weather).location.name}
-          lat={(data as Weather).location.lat}
-          lon={(data as Weather).location.lon}
+          weather={(data as Weather)}
         />
       ) }
       { loading ? (

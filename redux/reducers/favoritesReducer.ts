@@ -1,10 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import favoritesActions from '../actions/favoritesActions';
+import Weather from 'types/weather';
 
 export type Favorite = {
-  name: string,
-  lat: number,
-  lon: number,
+  lastUpdated: string;
+  weather: Weather;
 }
 
 export type InitialState = {
@@ -21,5 +21,5 @@ export const favoritesSlice = createSlice({
   reducers: favoritesActions,
 });
 
-export const { addFavorite, removeFavorite } = favoritesSlice.actions;
+export const { addFavorite, loadFavorites, updateFavorite, removeFavorite } = favoritesSlice.actions;
 export default favoritesSlice.reducer;
