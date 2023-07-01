@@ -1,4 +1,3 @@
-import Head from 'next/head';
 import styles from '@/pages/index.module.css';
 import getUserCoordinates from '../utils/getUserCoordinates';
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
@@ -76,10 +75,6 @@ export default function Home({ serverLatitude, serverLongitude, serverWeather, o
 
   return (
     <div className={styles.container}>
-      <Head>
-        <title>Weather</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
       <WeatherDisplay data={weather} loading={loading} />
     </div>
   );
