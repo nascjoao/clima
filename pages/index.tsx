@@ -9,12 +9,13 @@ import LocationOffIcon from '@mui/icons-material/LocationOff';
 import { getCookie } from 'cookies-next';
 import WeatherDisplay from '@/components/WeatherDisplay';
 
-export default function Home({ serverLatitude, serverLongitude, serverWeather, origin, firstAccess, storedWeather }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ serverLatitude, serverLongitude, serverWeather, origin, storedWeather }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [coordinates, setCoordinates] = useState({
     latitude: serverLatitude,
     longitude: serverLongitude
   });
   const [weather, setWeather] = useState<Weather|object>(serverWeather);
+  const [firstAccess, setFirstAccess] = useState(false);
   const [locationAccessGranted, setLocationAccessGranted] = useState(!firstAccess);
   function allowAccessLocation() {
     getUserCoordinates()
@@ -26,9 +27,12 @@ export default function Home({ serverLatitude, serverLongitude, serverWeather, o
           };
           setCoordinates(currentCoords);
           setLocationAccessGranted(true);
+          localStorage.setItem('geo-permission', 'granted');
+          setFirstAccess(false);
         }
       });
   }
+
   useEffect(() => {
     if (storedWeather) {
       const stored = JSON.parse(storedWeather as string) as Weather;
@@ -41,6 +45,9 @@ export default function Home({ serverLatitude, serverLongitude, serverWeather, o
   }, [storedWeather]);
 
   useEffect(() => {
+    if (localStorage.getItem('geo-permission') !== 'granted' && !coordinates.latitude) {
+      setFirstAccess(true);
+    }
     if ([coordinates.latitude, coordinates.longitude].every((coord) => typeof coord === 'number')) {
       fetch(`${origin}/api/weather?query=${coordinates.latitude},${coordinates.longitude}`)
         .then((response) => response.json())
@@ -51,25 +58,32 @@ export default function Home({ serverLatitude, serverLongitude, serverWeather, o
   const needingToUpdateLocation = !coordinates.latitude && locationAccessGranted;
   const loading = !(weather as Weather).current && !needingToUpdateLocation;
 
-  if (!locationAccessGranted || needingToUpdateLocation) return (
+  if (firstAccess) return (
     <Box sx={{
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       height: '100vh',
     }}>
-      { needingToUpdateLocation ? (
-        <Button onClick={allowAccessLocation} variant="text" startIcon={<SyncIcon />}>
-          Atualizar minha localização
-        </Button>
-      ) : (
-        <Alert sx={{ maxWidth: '30rem' }} severity="info" icon={<LocationOffIcon />}>
-          <AlertTitle>Boas vindas!</AlertTitle>
-          Parece ser sua primeira vez acessando.
-          Habilite a localização para ter acesso as informações climáticas.
-          <Button sx={{ marginTop: '1rem' }} variant="contained" onClick={allowAccessLocation}>Habilitar localização</Button>
-        </Alert>
-      ) }
+      <Alert sx={{ maxWidth: '30rem' }} severity="info" icon={<LocationOffIcon />}>
+        <AlertTitle>Boas vindas!</AlertTitle>
+        Parece ser sua primeira vez acessando.
+        Habilite a localização para ter acesso as informações climáticas.
+        <Button sx={{ marginTop: '1rem' }} variant="contained" onClick={allowAccessLocation}>Habilitar localização</Button>
+      </Alert>
+    </Box>
+  );
+
+  if (needingToUpdateLocation) return (
+    <Box sx={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+    }}>
+      <Button onClick={allowAccessLocation} variant="text" startIcon={<SyncIcon />}>
+        Atualizar minha localização
+      </Button>
     </Box>
   );
 
@@ -96,7 +110,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const url = protocol + context.req.headers.host;
   let serverWeather = {};
   const storedWeather = getCookie('weather-last-local-request', { req: context.req, res: context.res }) || null;
-  const firstAccess = getCookie('geo-permission', { req: context.req, res: context.res }) !== 'previous-granted';
   
   if (headers.latitude !== 'null' && headers.longitude !== 'null') {
     const { latitude, longitude } = headers;
@@ -111,7 +124,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       storedWeather,
       serverWeather,
       origin: url,
-      firstAccess,
     }
   };
 }

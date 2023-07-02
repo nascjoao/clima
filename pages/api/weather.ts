@@ -26,7 +26,6 @@ function storeLocalWeather(data: Weather, req: NextApiRequest, res: NextApiRespo
     req,
     res,
   });
-  if (!getCookie('geo-permission', { req, res })) setCookie('geo-permission', 'previous-granted', { req, res });
 }
 
 export default async function weather(req: NextApiRequest, res: NextApiResponse) {
