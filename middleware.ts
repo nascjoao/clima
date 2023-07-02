@@ -6,6 +6,7 @@ export async function middleware(req: NextRequest) {
   if (storedWeather) {
     newHeaders.set('Latitude', JSON.parse(storedWeather.value).location.lat);
     newHeaders.set('Longitude', JSON.parse(storedWeather.value).location.lon);
+    newHeaders.set('Weather', JSON.parse(storedWeather.value));
   }
   if (req.geo && !storedWeather) {
     newHeaders.set('Latitude', req.geo.latitude || 'null');

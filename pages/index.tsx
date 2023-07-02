@@ -96,13 +96,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const headers = context.req.headers;
   const protocol = context.req.headers.host?.includes('localhost') ? 'http://' : 'https://';
   const url = protocol + context.req.headers.host;
-  let serverWeather = {};
-  if (headers.latitude !== 'null' && headers.longitude !== 'null') {
-    const { latitude, longitude } = headers;
-    const response = await fetch(`${url}/api/weather?query=${latitude},${longitude}`);
-    const data = await response.json();
-    if (!data.error) serverWeather = data;
-  }
+  const serverWeather = headers.weather || {};
   return {
     props: {
       serverLatitude: Number(headers.latitude),
