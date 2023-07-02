@@ -6,10 +6,9 @@ import type Weather from '../types/weather';
 import { Alert, AlertTitle, Box, Button } from '@mui/material';
 import SyncIcon from '@mui/icons-material/Sync';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
-import { getCookie } from 'cookies-next';
 import WeatherDisplay from '@/components/WeatherDisplay';
 
-export default function Home({ serverLatitude, serverLongitude, serverWeather, origin, storedWeather }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ serverLatitude, serverLongitude, serverWeather, origin }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [coordinates, setCoordinates] = useState({
     latitude: serverLatitude,
     longitude: serverLongitude
@@ -32,17 +31,6 @@ export default function Home({ serverLatitude, serverLongitude, serverWeather, o
         }
       });
   }
-
-  useEffect(() => {
-    if (storedWeather) {
-      const stored = JSON.parse(storedWeather as string) as Weather;
-      setCoordinates({
-        latitude: stored.location.lat,
-        longitude: stored.location.lon,
-      });
-      return setWeather(JSON.parse(storedWeather as string));
-    }
-  }, [storedWeather]);
 
   useEffect(() => {
     if (localStorage.getItem('geo-permission') !== 'granted' && !coordinates.latitude) {
@@ -109,8 +97,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const protocol = context.req.headers.host?.includes('localhost') ? 'http://' : 'https://';
   const url = protocol + context.req.headers.host;
   let serverWeather = {};
-  const storedWeather = getCookie('weather-last-local-request', { req: context.req, res: context.res }) || null;
-  
   if (headers.latitude !== 'null' && headers.longitude !== 'null') {
     const { latitude, longitude } = headers;
     const response = await fetch(`${url}/api/weather?query=${latitude},${longitude}`);
@@ -121,7 +107,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props: {
       serverLatitude: Number(headers.latitude),
       serverLongitude: Number(headers.longitude),
-      storedWeather,
       serverWeather,
       origin: url,
     }
