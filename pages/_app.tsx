@@ -8,6 +8,7 @@ import Nav from '@/components/Nav';
 import { Provider } from 'react-redux';
 import { store } from '../redux/store';
 import Head from 'next/head';
+import CookieConsent from '@/components/CookieConsent';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -18,6 +19,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <Component {...pageProps} />
       <Nav />
+      <CookieConsent />
     </Provider>
   );
 }
